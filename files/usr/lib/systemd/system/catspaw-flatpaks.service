@@ -1,0 +1,14 @@
+[Unit]
+Description=Install the Catspaw OS app set on first boot
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=!/var/lib/catspaw/flatpaks.done
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/libexec/catspaw-flatpaks
+TimeoutStartSec=infinity
+
+[Install]
+WantedBy=multi-user.target

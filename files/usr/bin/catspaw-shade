@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+# CATSPAW // SHADE -- apply the Catspaw cursed-shader pack to a game.
+#
+# vkBasalt is a Vulkan post-processing layer; these looks are ReShade .fx
+# shaders it runs on the final frame. The Home key toggles them in-game.
+#
+#   catspaw-shade list
+#   catspaw-shade steam   <look>              # prints Steam launch options
+#   catspaw-shade flatpak <look> <app-id> [args...]
+#   catspaw-shade run     <look> -- <cmd...>  # any native Vulkan program
+#   catspaw-shade test    <look>              # runs vkcube with the look
+#
+set -euo pipefail
+
+# Resolve to the real path (home is a symlink to /var/home on ostree distros);
+# vkBasalt and the flatpak sandbox must agree on the exact path.
+DIR="$(realpath "${XDG_CONFIG_HOME:-$HOME/.config}/vkBasalt/catspaw")"
+CONFDIR="$DIR/conf"
+
+looks() { ls "$CONFDIR"/*.conf 2>/dev/null | xargs -n1 basename | sed 's/\.conf$//'; }
+
+conf_for() {
+    local look="$1" c="$CONFDIR/$1.conf"
+    if [[ ! -f "$c" ]]; then
+        echo "catspaw-shade: no such look '$look'. Try: catspaw-shade list" >&2
+        exit 1
+    fi
+    echo "$c"
+}
+
+cmd="${1:-}"; shift || true
+case "$cmd" in
+  list|"")
+    echo "CATSPAW shader looks:"
+    looks | sed 's/^/  - /'
+    echo
+    echo "Usage: catspaw-shade {steam|flatpak|run|test} <look> ..."
+    ;;
+
+  steam)
+    look="${1:?usage: catspaw-shade steam <look>}"
+    conf="$(conf_for "$look")"
+    echo "Paste this into the game's Steam launch options (right-click > Properties):"
+    echo
+    echo "    ENABLE_VKBASALT=1 VKBASALT_CONFIG_FILE=$conf %command%"
+    echo
+    echo "Then launch normally. Press Home in-game to toggle the '$look' look."
+    ;;
+
+  run)
+    look="${1:?usage: catspaw-shade run <look> -- <cmd...>}"; shift
+    [[ "${1:-}" == "--" ]] && shift
+    [[ $# -gt 0 ]] || { echo "catspaw-shade: no command after --" >&2; exit 1; }
+    conf="$(conf_for "$look")"
+    echo "catspaw-shade: '$look' -> $*" >&2
+    exec env ENABLE_VKBASALT=1 VKBASALT_CONFIG_FILE="$conf" "$@"
+    ;;
+
+  flatpak)
+    look="${1:?usage: catspaw-shade flatpak <look> <app-id> [args...]}"; shift
+    app="${1:?missing flatpak app id}"; shift || true
+    conf="$(conf_for "$look")"
+    # The sandbox must (a) see the shader dir, (b) load the vkBasalt layer, and
+    # (c) reach an X server for the toggle key. vkBasalt's toggle is X11-only,
+    # and Sober ships `fallback-x11`, so under Wayland it gets no X socket and
+    # the key dies -- `--socket=x11` fixes that (it also sets DISPLAY). All
+    # grants are per-invocation, so your normal launch config is untouched.
+    echo "catspaw-shade: '$look' -> flatpak $app (x11 toggle enabled)" >&2
+    exec flatpak run \
+        --filesystem="$DIR:ro" \
+        --socket=x11 \
+        --env=ENABLE_VKBASALT=1 \
+        --env=VKBASALT_CONFIG_FILE="$conf" \
+        "$app" "$@"
+    ;;
+
+  test)
+    look="${1:?usage: catspaw-shade test <look>}"
+    conf="$(conf_for "$look")"
+    command -v vkcube >/dev/null || { echo "vkcube not found" >&2; exit 1; }
+    echo "catspaw-shade: testing '$look' with vkcube. A spinning cube window" >&2
+    echo "will open; press Home to toggle the effect, Esc/close to quit." >&2
+    exec env ENABLE_VKBASALT=1 VKBASALT_CONFIG_FILE="$conf" vkcube
+    ;;
+
+  *)
+    echo "catspaw-shade: unknown command '$cmd'" >&2
+    echo "Try: catspaw-shade list" >&2
+    exit 1
+    ;;
+esac

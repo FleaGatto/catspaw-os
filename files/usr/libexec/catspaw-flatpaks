@@ -1,0 +1,24 @@
+#!/usr/bin/bash
+# Install the Catspaw app set, once, on the first boot that has a network.
+set -euo pipefail
+
+STAMP=/var/lib/catspaw/flatpaks.done
+LIST=/usr/share/catspaw/flatpaks.list
+
+[ -f "$STAMP" ] && exit 0
+[ -r "$LIST" ] || exit 0
+
+flatpak remote-add --if-not-exists --system \
+    flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+
+mapfile -t apps < <(grep -vE '^[[:space:]]*(#|$)' "$LIST")
+[ ${#apps[@]} -gt 0 ] || exit 0
+
+# One at a time: a single unavailable app shouldn't stop the rest installing.
+for app in "${apps[@]}"; do
+    flatpak install --system -y --noninteractive flathub "$app" \
+        || echo "catspaw: could not install $app"
+done
+
+mkdir -p "$(dirname "$STAMP")"
+date -Is > "$STAMP"

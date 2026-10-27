@@ -1,0 +1,40 @@
+# Packages layered on top of the Hyprland session. Some come from COPRs that
+# may lag a Fedora release; build.sh installs these with --skip-unavailable and
+# catspaw-verify reports whatever didn't make it in.
+
+# what the rice configs expect
+ghostty
+wezterm
+yazi
+starship
+swappy
+kvantum
+qt5ct
+qt6ct
+nwg-dock-hyprland
+quickshell
+ags
+
+# hyprland extras
+hyprsunset
+swww
+wlogout
+
+# terminal / dev
+neovim
+helix
+fd-find
+zoxide
+eza
+bat
+lazygit
+gh
+
+# tuning and capture
+lact
+goverlay
+obs-studio
+imv
+
+# SoberStrap runs against the system Qt
+python3-pyqt6

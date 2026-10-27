@@ -1,0 +1,60 @@
+name: Build Catspaw OS
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    # Sunday morning, after Bazzite's own image has rebuilt
+    - cron: "0 6 * * 0"
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: catspaw-os
+  IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
+
+jobs:
+  build:
+    name: Build and push
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      # bazzite-deck-gnome is tens of GB unpacked; a stock runner runs out
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc \
+                      /usr/local/share/boost /usr/lib/jvm "$AGENT_TOOLSDIRECTORY"
+          sudo docker image prune --all --force
+          df -h /
+
+      - name: Build image
+        id: build
+        run: |
+          tags="latest ${{ github.sha }} $(date +%Y%m%d)"
+          args=""
+          for t in $tags; do args="$args -t ${IMAGE_NAME}:${t}"; done
+          podman build $args .
+          echo "tags=$tags" >> "$GITHUB_OUTPUT"
+
+      - name: Report skipped packages
+        run: podman run --rm "${IMAGE_NAME}:latest" /usr/libexec/catspaw-verify
+
+      - name: Log in to ghcr.io
+        run: podman login ghcr.io -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push
+        run: |
+          for t in ${{ steps.build.outputs.tags }}; do
+            podman push "${IMAGE_NAME}:${t}" \
+              "docker://${IMAGE_REGISTRY,,}/${IMAGE_NAME}:${t}"
+          done
+
+      - name: Summary
+        run: |
+          echo "### Catspaw OS built" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "sudo bootc switch --enforce-container-sigpolicy ${IMAGE_REGISTRY,,}/${IMAGE_NAME}:latest" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"

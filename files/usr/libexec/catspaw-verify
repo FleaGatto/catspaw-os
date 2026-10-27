@@ -1,0 +1,13 @@
+#!/usr/bin/bash
+# Report which optional packages are missing from this image.
+# Run in CI after a build, since build.sh skips unavailable packages.
+missing=0
+while read -r pkg; do
+    [ -z "$pkg" ] && continue
+    case "$pkg" in \#*) continue ;; esac
+    if ! rpm -q "$pkg" >/dev/null 2>&1; then
+        echo "NOT INSTALLED: $pkg"
+        missing=$((missing + 1))
+    fi
+done < /usr/share/catspaw/packages-extra.list
+echo "catspaw-verify: $missing optional package(s) missing"

@@ -1,0 +1,37 @@
+# Apps installed on first boot. Lines starting with # are ignored.
+# No browser here on purpose: catspaw-browser-picker asks on first login.
+
+# --- Roblox / gaming
+org.vinegarhq.Sober
+org.vinegarhq.Vinegar
+com.heroicgameslauncher.hgl
+com.vysp3r.ProtonPlus
+com.github.Matoking.protontricks
+com.usebottles.bottles
+pet.baba.unofficial.Vice
+
+# --- comms
+dev.vencord.Vesktop
+us.zoom.Zoom
+com.protonvpn.www
+
+# --- media and creative
+com.spotify.Client
+org.gimp.GIMP
+org.blender.Blender
+org.audacityteam.Audacity
+com.dec05eba.gpu_screen_recorder
+io.github.nokse22.Exhibit
+
+# --- utilities
+com.github.tchx84.Flatseal
+io.github.flattool.Warehouse
+io.missioncenter.MissionCenter
+it.mijorus.gearlever
+com.ranfdev.DistroShelf
+com.github.wwmm.easyeffects
+org.pipewire.Helvum
+org.fedoraproject.MediaWriter
+org.raspberrypi.rpi-imager
+com.belmoussaoui.Authenticator
+org.notepadng.Notepadng

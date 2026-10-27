@@ -1,0 +1,18 @@
+[Desktop Entry]
+Type=Application
+Name=SoberStrap
+Comment=Launch Roblox with FastFlags, shaders and fixes
+Exec=/usr/bin/sober-strap
+Icon=/usr/share/catspaw/soberstrap/assets/logo.png
+Categories=Game;
+Terminal=false
+StartupWMClass=sober-strap
+Actions=launch;noproxy;
+
+[Desktop Action launch]
+Name=Launch Roblox
+Exec=/usr/bin/sober-strap --launch
+
+[Desktop Action noproxy]
+Name=Launch without proxy
+Exec=/usr/bin/sober-strap --no-proxy

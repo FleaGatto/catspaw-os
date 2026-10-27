@@ -1,0 +1,4 @@
+#!/usr/bin/bash
+# SoberStrap runs from source against the system PyQt6 here: no PyInstaller
+# bundle to rebuild every time the image updates.
+exec /usr/bin/python3 /usr/share/catspaw/soberstrap/soberstrap.py "$@"

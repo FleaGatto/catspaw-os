@@ -1,0 +1,36 @@
+#!/usr/bin/bash
+# Ask once, on first login, which browser to install. Catspaw OS ships none.
+set -euo pipefail
+
+STAMP="${XDG_STATE_HOME:-$HOME/.local/state}/catspaw/browser.done"
+[ -f "$STAMP" ] && exit 0
+command -v wofi >/dev/null || exit 0
+
+# label|flatpak id — keep the order, so it isn't an associative array
+BROWSERS=(
+    "Zen|app.zen_browser.zen"
+    "Firefox|org.mozilla.firefox"
+    "Brave|com.brave.Browser"
+    "Google Chrome|com.google.Chrome"
+    "Chromium|org.chromium.Chromium"
+    "LibreWolf|io.gitlab.librewolf-community"
+    "Vivaldi|com.vivaldi.Vivaldi"
+    "Skip — no browser|"
+)
+
+choice=$(printf '%s\n' "${BROWSERS[@]%%|*}" |
+    wofi --dmenu --insensitive --prompt "Pick a browser" --lines 9 || true)
+
+mkdir -p "$(dirname "$STAMP")"
+[ -n "$choice" ] || exit 0          # dismissed: ask again next login
+
+for entry in "${BROWSERS[@]}"; do
+    [ "${entry%%|*}" = "$choice" ] || continue
+    id="${entry#*|}"
+    if [ -n "$id" ]; then
+        flatpak install --user -y --noninteractive flathub "$id" \
+            || notify-send "Catspaw" "Couldn't install $choice" || true
+    fi
+    date -Is > "$STAMP"
+    break
+done

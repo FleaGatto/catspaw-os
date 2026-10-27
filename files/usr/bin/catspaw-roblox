@@ -1,0 +1,50 @@
+#!/usr/bin/bash
+# Launch Roblox (Sober) with a Catspaw look.
+#
+# gamescope, not vkBasalt: vkBasalt's instance hook and Sober's Android-surface
+# translation can't coexist — Sober exits at renderer init. gamescope shades its
+# own composited output instead, which leaves Sober's Vulkan chain alone.
+set -euo pipefail
+
+SHADER_DIRS=("$HOME/.local/share/gamescope/reshade/Shaders" /usr/share/gamescope/reshade/Shaders)
+APP=org.vinegarhq.Sober
+
+usage() {
+    echo "usage: catspaw-roblox [look|off|list]"
+    echo "looks:"
+    for d in "${SHADER_DIRS[@]}"; do
+        [ -d "$d" ] || continue
+        for f in "$d"/Catspaw*.fx; do
+            [ -e "$f" ] || continue
+            name=$(basename "$f" .fx); echo "  ${name#Catspaw}" | tr '[:upper:]' '[:lower:]'
+        done
+    done | sort -u
+}
+
+resolve() {  # look -> shader filename gamescope can find
+    local want="$1"
+    for d in "${SHADER_DIRS[@]}"; do
+        [ -d "$d" ] || continue
+        for f in "$d"/Catspaw*.fx; do
+            [ -e "$f" ] || continue
+            local name; name=$(basename "$f")
+            local short; short=$(echo "${name%.fx}" | sed 's/^Catspaw//' | tr '[:upper:]' '[:lower:]')
+            [ "$short" = "$want" ] && { echo "$name"; return 0; }
+        done
+    done
+    return 1
+}
+
+case "${1:-}" in
+    list|-l|--list) usage; exit 0 ;;
+    -h|--help)      usage; exit 0 ;;
+    ""|off)         exec flatpak run "$APP" ;;
+esac
+
+if ! shader=$(resolve "$1"); then
+    echo "catspaw-roblox: no such look '$1'" >&2
+    usage >&2
+    exit 1
+fi
+command -v gamescope >/dev/null || { echo "gamescope is not installed" >&2; exit 1; }
+exec gamescope -f --reshade-effect "$shader" -- flatpak run "$APP"
