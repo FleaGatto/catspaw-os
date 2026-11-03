@@ -28,8 +28,17 @@ dnf5 -y install \
 # --skip-unavailable: a package missing from a COPR is reported in the build
 # log and skipped, rather than failing the image. Check the log after a build.
 mapfile -t extras < <(grep -vE '^[[:space:]]*(#|$)' /usr/share/catspaw/packages-extra.list)
-# --skip-unavailable goes AFTER the subcommand; dnf5 rejects it before.
-dnf5 -y install --skip-unavailable "${extras[@]}"
+# --skip-unavailable goes AFTER the subcommand; dnf5 rejects it before. It
+# covers a package that is missing, but NOT one that installs and then loses a
+# file conflict -- that aborts the entire transaction and takes every other
+# extra with it. Try the batch first because it is much faster, then fall back
+# to one at a time so a single bad package is reported rather than fatal.
+if ! dnf5 -y install --skip-unavailable "${extras[@]}"; then
+    echo "WARN: batch install of extras failed; retrying individually"
+    for pkg in "${extras[@]}"; do
+        dnf5 -y install --skip-unavailable "$pkg" || echo "WARN: skipped $pkg"
+    done
+fi
 
 ### --------------------------------------------------------------- plasma
 # A second, small desktop. See packages-kde.list for what is left out and why.

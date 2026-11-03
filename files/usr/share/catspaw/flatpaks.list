@@ -28,6 +28,9 @@ org.audacityteam.Audacity
 com.dec05eba.gpu_screen_recorder
 #io.github.nokse22.Exhibit   # trimmed: uncomment to restore
 
+# --- tuning
+io.github.benjamimgois.goverlay
+
 # --- utilities
 com.github.tchx84.Flatseal
 io.github.flattool.Warehouse

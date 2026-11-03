@@ -32,7 +32,10 @@ gh
 
 # tuning and capture
 lact
-goverlay
+# goverlay is a flatpak instead (see flatpaks.list): the native package
+# hard-requires Fedora's mangohud, which owns the same files as the
+# terra-mangohud Bazzite ships on F44 and is a version behind it. Installing it
+# aborts the whole RPM transaction with a file conflict.
 obs-studio
 imv
 
