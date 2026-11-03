@@ -28,7 +28,8 @@ dnf5 -y install \
 # --skip-unavailable: a package missing from a COPR is reported in the build
 # log and skipped, rather than failing the image. Check the log after a build.
 mapfile -t extras < <(grep -vE '^[[:space:]]*(#|$)' /usr/share/catspaw/packages-extra.list)
-dnf5 -y --skip-unavailable install "${extras[@]}"
+# --skip-unavailable goes AFTER the subcommand; dnf5 rejects it before.
+dnf5 -y install --skip-unavailable "${extras[@]}"
 
 # COPRs stay out of the installed system: updates come from rebuilding.
 for repo in sdegler/hyprland wezfurlong/wezterm-nightly ilyaz/LACT; do
