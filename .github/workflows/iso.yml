@@ -1,0 +1,80 @@
+name: Build installer ISO
+
+# Deliberately manual. The ISO is ~8-12 GB and takes far longer than the image
+# build, so it runs when you ask for it, not on every push.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Image tag to build the ISO from"
+        default: "latest"
+        required: true
+
+env:
+  IMAGE: ghcr.io/fleagatto/catspaw-os
+  ISO_REPO: ghcr.io/fleagatto/catspaw-os-iso
+
+jobs:
+  iso:
+    name: bootc-image-builder
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      # The image unpacks to ~18 GB and the ISO adds ~10 on top, so the runner
+      # has to be stripped before anything else happens.
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc \
+                      /usr/local/share/boost /usr/lib/jvm "$AGENT_TOOLSDIRECTORY"
+          sudo docker image prune --all --force
+          df -h /
+
+      - name: Build ISO
+        run: |
+          mkdir -p output
+          # --privileged and the host container store are both required: the
+          # builder makes loopback devices and partitions a disk image.
+          # btrfs matches what Bazzite installs onto.
+          sudo podman run --rm --privileged \
+            --security-opt label=type:unconfined_t \
+            -v "$PWD/output":/output \
+            -v /var/lib/containers/storage:/var/lib/containers/storage \
+            quay.io/centos-bootc/bootc-image-builder:latest \
+            --type iso \
+            --rootfs btrfs \
+            "${IMAGE}:${{ inputs.tag }}"
+          sudo chown -R "$USER" output
+          find output -name '*.iso' -exec ls -lh {} +
+
+      - name: Install oras
+        run: |
+          VER=1.2.0
+          curl -fsSL "https://github.com/oras-project/oras/releases/download/v${VER}/oras_${VER}_linux_amd64.tar.gz" \
+            | sudo tar -xz -C /usr/local/bin oras
+          oras version
+
+      # A GitHub *release asset* caps at 2 GB, so a 10 GB ISO cannot be attached
+      # to a release at all. ghcr has no such cliff, and it is already where the
+      # image lives, so the ISO ships as an OCI artifact beside it.
+      - name: Push ISO to ghcr
+        run: |
+          echo "${{ secrets.GITHUB_TOKEN }}" | oras login ghcr.io -u "${{ github.actor }}" --password-stdin
+          iso=$(find output -name '*.iso' | head -1)
+          [ -n "$iso" ] || { echo "no ISO produced"; exit 1; }
+          mv "$iso" output/catspaw-os.iso
+          cd output
+          oras push "${ISO_REPO}:${{ inputs.tag }}" \
+            --artifact-type application/vnd.catspaw.iso \
+            catspaw-os.iso:application/vnd.efi.iso
+
+      - name: Summary
+        run: |
+          {
+            echo "### Catspaw OS ISO"
+            echo '```'
+            echo "oras pull ${ISO_REPO}:${{ inputs.tag }}"
+            echo '```'
+            echo "Then write catspaw-os.iso to a USB stick."
+          } >> "$GITHUB_STEP_SUMMARY"
