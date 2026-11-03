@@ -1,0 +1,41 @@
+# A deliberately small Plasma session: a second desktop for the $mod+SHIFT+D
+# session switcher, and a fallback if Hyprland breaks.
+#
+# Explicit packages, NEVER the @kde-desktop-environment group. The group is
+# what makes a stock KDE install heavy -- it drags in the whole PIM stack
+# (akonadi, kmail, kontact, korganizer, kaddressbook), Discover, the games,
+# browser integration and a second set of media apps, none of which this image
+# wants. Installed with --skip-unavailable, so a rename upstream is reported by
+# catspaw-verify rather than taking the build down.
+
+# --- session core
+plasma-desktop
+plasma-workspace
+plasma-workspace-wayland
+kwin-wayland
+kde-settings-plasma
+systemsettings
+
+# --- hardware and system integration
+plasma-nm
+plasma-pa
+powerdevil
+kscreen
+bluedevil
+plasma-systemmonitor
+polkit-kde
+
+# --- portal and theming, so GTK and Hyprland apps still look right
+xdg-desktop-portal-kde
+breeze-gtk
+
+# --- the two utilities a desktop is genuinely unusable without
+dolphin
+ark
+
+# ===========================================================================
+# DELIBERATELY ABSENT: akonadi*, kmail, kontact, korganizer, kaddressbook,
+# elisa, kdegames, plasma-discover, plasma-browser-integration, kate, kwrite.
+# No konsole either -- kitty and ghostty are already in the image and work fine
+# under Plasma.
+# ===========================================================================

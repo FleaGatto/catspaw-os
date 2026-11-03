@@ -31,6 +31,11 @@ mapfile -t extras < <(grep -vE '^[[:space:]]*(#|$)' /usr/share/catspaw/packages-
 # --skip-unavailable goes AFTER the subcommand; dnf5 rejects it before.
 dnf5 -y install --skip-unavailable "${extras[@]}"
 
+### --------------------------------------------------------------- plasma
+# A second, small desktop. See packages-kde.list for what is left out and why.
+mapfile -t kde < <(grep -vE '^[[:space:]]*(#|$)' /usr/share/catspaw/packages-kde.list)
+dnf5 -y install --skip-unavailable "${kde[@]}"
+
 # COPRs stay out of the installed system: updates come from rebuilding.
 for repo in sdegler/hyprland wezfurlong/wezterm-nightly ilyaz/LACT; do
     dnf5 -y copr disable "$repo" || true
