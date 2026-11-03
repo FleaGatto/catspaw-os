@@ -1,0 +1,54 @@
+[Plymouth Theme]
+Name=Catspaw
+Description=Catspaw OS boot splash: paw mark, wordmark and a hazard progress bar.
+ModuleName=two-step
+
+[two-step]
+ImageDir=/usr/share/plymouth/themes/catspaw
+Font=Cantarell 12
+TitleFont=Cantarell Light 30
+# animation-0001.png is the paw. A single frame makes it static -- two-step
+# needs no script plugin for that, which matters here because script.so is not
+# shipped on this base.
+HorizontalAlignment=.5
+VerticalAlignment=.42
+WatermarkHorizontalAlignment=.5
+WatermarkVerticalAlignment=.62
+DialogHorizontalAlignment=.5
+DialogVerticalAlignment=.75
+TitleHorizontalAlignment=.5
+TitleVerticalAlignment=.75
+Transition=none
+TransitionDuration=0.0
+BackgroundStartColor=0x0d0d0f
+BackgroundEndColor=0x0d0d0f
+ProgressBarBackgroundColor=0x3a2f1c
+ProgressBarForegroundColor=0xf0a23b
+MessageBelowAnimation=true
+
+[boot-up]
+UseProgressBar=true
+ProgressBarShowPercentComplete=false
+UseEndAnimation=false
+
+[shutdown]
+UseProgressBar=true
+UseEndAnimation=false
+
+[reboot]
+UseProgressBar=true
+UseEndAnimation=false
+
+[updates]
+SuppressMessages=true
+UseProgressBar=true
+ProgressBarShowPercentComplete=true
+Title=Updating Catspaw OS...
+SubTitle=Do not turn off your computer
+
+[system-upgrade]
+SuppressMessages=true
+UseProgressBar=true
+ProgressBarShowPercentComplete=true
+Title=Upgrading Catspaw OS...
+SubTitle=Do not turn off your computer

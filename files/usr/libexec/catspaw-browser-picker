@@ -2,8 +2,9 @@
 # Ask once, on first login, which browser to install. Catspaw OS ships none.
 set -euo pipefail
 
-STAMP="${XDG_STATE_HOME:-$HOME/.local/state}/catspaw/browser.done"
-[ -f "$STAMP" ] && exit 0
+# No stamp gate any more: this is an on-demand command. Catspaw ships Brave and
+# makes it default at first login (catspaw-firstrun); run this when you want to
+# install and switch to something else.
 command -v wofi >/dev/null || exit 0
 
 # label|flatpak id — keep the order, so it isn't an associative array

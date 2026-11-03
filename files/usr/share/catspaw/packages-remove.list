@@ -1,0 +1,41 @@
+# Packages removed from the base image. build.sh removes these one at a time and
+# tolerates a miss, so a package that upstream already dropped is reported by
+# catspaw-verify rather than failing the build.
+#
+# Measured against the booted image before writing: nearly every GNOME app this
+# was meant to strip (gnome-tour, maps, weather, contacts, totem, rhythmbox,
+# cheese, simple-scan, boxes, calendar, clocks...) is ALREADY absent. Bazzite
+# removes them upstream. Only yelp survives, so this list is short on purpose.
+
+# --- GNOME leftovers
+yelp
+
+# --- Gaming Mode session
+# The gamescope *session* is the Big Picture / Gaming Mode shell. Removing it
+# leaves the desktop session alone and is the point of a Hyprland-first image.
+gamescope-session-steam
+gamescope-session-plus
+
+# --- OOBE
+bazzite-portal
+
+# --- Steam Deck cosmetics
+steamdeck-backgrounds
+steamdeck-gnome-presets
+
+# ===========================================================================
+# DELIBERATELY NOT REMOVED -- do not add these without understanding the cost:
+#
+#   gamescope, gamescope-libs, gamescope-shaders
+#       The compositor binary itself, separate from the session. Still useful
+#       in desktop mode for per-game scaling and frame limiting via
+#       `gamescope %command%` in a Steam launch option.
+#
+#   jupiter-fan-control      Steam Deck FAN CONTROL. Removing this is a
+#                            thermal problem, not a debloat.
+#   jupiter-hw-support-btrfs Deck hardware quirks and firmware support.
+#   steamdeck-dsp            The speaker DSP profile. Without it the built-in
+#                            speakers sound wrong.
+#
+#   steam / steam-devices    Removing Steam from a Steam Deck is not debloating.
+# ===========================================================================

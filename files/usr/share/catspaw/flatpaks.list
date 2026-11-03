@@ -1,5 +1,10 @@
 # Apps installed on first boot. Lines starting with # are ignored.
-# No browser here on purpose: catspaw-browser-picker asks on first login.
+
+# --- browser
+# Brave is installed and made default automatically (see catspaw-default-browser).
+# catspaw-browser-picker still exists as an on-demand command if you want to
+# switch later -- it just no longer runs unprompted at first login.
+com.brave.Browser
 
 # --- Roblox / gaming
 org.vinegarhq.Sober
@@ -12,7 +17,7 @@ pet.baba.unofficial.Vice
 
 # --- comms
 dev.vencord.Vesktop
-us.zoom.Zoom
+#us.zoom.Zoom   # trimmed: uncomment to restore
 com.protonvpn.www
 
 # --- media and creative
@@ -21,7 +26,7 @@ org.gimp.GIMP
 org.blender.Blender
 org.audacityteam.Audacity
 com.dec05eba.gpu_screen_recorder
-io.github.nokse22.Exhibit
+#io.github.nokse22.Exhibit   # trimmed: uncomment to restore
 
 # --- utilities
 com.github.tchx84.Flatseal
@@ -31,7 +36,7 @@ it.mijorus.gearlever
 com.ranfdev.DistroShelf
 com.github.wwmm.easyeffects
 org.pipewire.Helvum
-org.fedoraproject.MediaWriter
-org.raspberrypi.rpi-imager
+#org.fedoraproject.MediaWriter   # trimmed: uncomment to restore
+#org.raspberrypi.rpi-imager   # trimmed: uncomment to restore
 com.belmoussaoui.Authenticator
 org.notepadng.Notepadng

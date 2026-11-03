@@ -36,7 +36,7 @@ jobs:
           tags="latest ${{ github.sha }} $(date +%Y%m%d)"
           args=""
           for t in $tags; do args="$args -t ${IMAGE_NAME}:${t}"; done
-          podman build $args .
+          podman build --build-arg BASE_IMAGE=ghcr.io/ublue-os/bazzite-deck-gnome:stable $args .
           echo "tags=$tags" >> "$GITHUB_OUTPUT"
 
       - name: Report skipped packages

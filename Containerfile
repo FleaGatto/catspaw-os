@@ -2,7 +2,11 @@
 #
 # Built on bazzite-deck-gnome so the GNOME session stays available as a
 # fallback; Hyprland is the session this image is actually for.
-FROM ghcr.io/ublue-os/bazzite-deck-gnome:stable
+# Default is the exact digest this was developed against, so a local build is
+# reproducible. CI overrides it with :stable (see .github/workflows/build.yml)
+# so the Sunday rebuild still tracks upstream Bazzite.
+ARG BASE_IMAGE=ghcr.io/ublue-os/bazzite-deck-gnome@sha256:20503f01477c554871c64307edfe29bb7c70468c055ad6ead239434bc5fae05a
+FROM ${BASE_IMAGE}
 
 # Everything that ends up on the filesystem verbatim: branding, skel configs,
 # the Catspaw shaders, SoberStrap, the Pro Mic chain, first-boot services.

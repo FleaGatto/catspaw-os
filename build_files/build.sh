@@ -30,14 +30,46 @@ for repo in solopasha/hyprland pgdev/ghostty wezfurlong/wezterm-nightly ilyaz/LA
     dnf5 -y copr disable "$repo" || true
 done
 
+### ------------------------------------------------------------- debloat
+# One at a time, and never fatal: a package upstream already dropped must not
+# take the build down. catspaw-verify reports what is actually gone.
+mapfile -t unwanted < <(grep -vE '^[[:space:]]*(#|$)' /usr/share/catspaw/packages-remove.list)
+for pkg in "${unwanted[@]}"; do
+    dnf5 -y remove "$pkg" || echo "WARN: could not remove $pkg (already absent?)"
+done
+
 ### ---------------------------------------------------------- branding
+# ID is changed to catspaw by choice. ID_LIKE keeps bazzite and fedora so that
+# anything matching on ID_LIKE -- which is most things that matter -- still
+# resolves; only code hardcoding ID=bazzite can be surprised.
 sed -i \
     -e 's/^NAME=.*/NAME="Catspaw OS"/' \
     -e 's/^PRETTY_NAME=.*/PRETTY_NAME="Catspaw OS"/' \
     -e 's/^VARIANT=.*/VARIANT="Catspaw"/' \
     -e 's/^VARIANT_ID=.*/VARIANT_ID=catspaw/' \
+    -e 's|^ID=.*|ID=catspaw|' \
+    -e 's|^LOGO=.*|LOGO=catspaw-logo|' \
+    -e 's|^HOME_URL=.*|HOME_URL="https://github.com/FleaGatto/catspaw-os"|' \
+    -e 's|^BUG_REPORT_URL=.*|BUG_REPORT_URL="https://github.com/FleaGatto/catspaw-os/issues"|' \
     /usr/lib/os-release
+grep -q '^ID_LIKE=' /usr/lib/os-release \
+    && sed -i 's|^ID_LIKE=.*|ID_LIKE="bazzite fedora"|' /usr/lib/os-release \
+    || echo 'ID_LIKE="bazzite fedora"' >> /usr/lib/os-release
 echo 'CATSPAW_OS=1' >> /usr/lib/os-release
+
+cat > /etc/issue <<'ISSUE'
+
+  Catspaw OS  \n \l
+
+ISSUE
+
+### ------------------------------------------------------------- plymouth
+# NOTE: plymouth reads its theme from the initramfs, which on an ostree image is
+# prebuilt. Setting the default here is necessary but may not be sufficient --
+# if the splash still looks stock after rebasing, the initramfs needs
+# regenerating on the deployed system:
+#     sudo rpm-ostree initramfs --enable
+plymouth-set-default-theme catspaw || echo "WARN: could not set plymouth theme"
 
 ### ------------------------------------------------------------ services
 systemctl enable catspaw-flatpaks.service

@@ -1,0 +1,41 @@
+// Catspaw OS fastfetch profile.  fastfetch -c ~/.config/fastfetch/catspaw.jsonc
+// Unlike flex.jsonc next door, every value here is read off the real machine.
+{
+    "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+    "logo": {
+        // file-raw, not file: "file" only colours a logo that carries $1..$9
+        // markers, so a plain file comes out in the default colour. The escapes
+        // live in logo-color.txt instead, which also makes `cat` show it right.
+        "type": "file-raw",
+        "source": "/usr/share/catspaw/logo-color.txt",
+        "padding": { "top": 2, "right": 4 }
+    },
+    "display": { "separator": "  " },
+    "modules": [
+        { "type": "custom", "format": "\u001b[38;5;214m▌\u001b[1;38;5;220m CATSPAW OS \u001b[0m\u001b[38;5;240m// operator \u001b[38;5;253m{$USER}\u001b[0m" },
+        { "type": "custom", "format": "\u001b[38;5;214m▌\u001b[38;5;240m ──────────────────────────────\u001b[0m" },
+
+        { "type": "host",      "key": "▌ unit",    "keyColor": "38;5;214" },
+        { "type": "os",        "key": "▌ base",    "keyColor": "38;5;214" },
+        { "type": "kernel",    "key": "▌ kernel",  "keyColor": "38;5;214" },
+        { "type": "uptime",    "key": "▌ uptime",  "keyColor": "38;5;214" },
+        { "type": "packages",  "key": "▌ pkgs",    "keyColor": "38;5;214" },
+
+        { "type": "custom", "format": "" },
+
+        { "type": "wm",        "key": "▌ wm",      "keyColor": "38;5;208" },
+        { "type": "shell",     "key": "▌ shell",   "keyColor": "38;5;208" },
+        { "type": "terminal",  "key": "▌ term",    "keyColor": "38;5;208" },
+
+        { "type": "custom", "format": "" },
+
+        { "type": "cpu",       "key": "▌ cpu",     "keyColor": "38;5;220" },
+        { "type": "gpu",       "key": "▌ gpu",     "keyColor": "38;5;220" },
+        { "type": "memory",    "key": "▌ mem",     "keyColor": "38;5;220" },
+        { "type": "disk",      "key": "▌ disk",    "keyColor": "38;5;220" },
+        { "type": "battery",   "key": "▌ power",   "keyColor": "38;5;220" },
+
+        { "type": "custom", "format": "" },
+        { "type": "colors", "paddingLeft": 2, "symbol": "block" }
+    ]
+}

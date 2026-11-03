@@ -1,0 +1,56 @@
+#!/usr/bin/python3
+"""Minimal rainbow filter, written for Catspaw OS.
+
+The usual lolcat is a Ruby gem that this base does not package, and the one on
+the author's machine is a Python script bound to a home-directory interpreter
+that will not exist here. This is a self-contained stand-in on the system
+python3, so the login banner cannot lose its colour to a missing dependency.
+
+Supports the flags the banner actually uses: -p/--spread and -F/--freq.
+"""
+import argparse
+import math
+import sys
+
+
+def rainbow(i, freq):
+    r = int(127 * math.sin(freq * i + 0) + 128)
+    g = int(127 * math.sin(freq * i + 2 * math.pi / 3) + 128)
+    b = int(127 * math.sin(freq * i + 4 * math.pi / 3) + 128)
+    return r, g, b
+
+
+def main():
+    ap = argparse.ArgumentParser(add_help=False)
+    ap.add_argument("-p", "--spread", type=float, default=3.0)
+    ap.add_argument("-F", "--freq", type=float, default=0.1)
+    ap.add_argument("-h", "--help", action="store_true")
+    ap.add_argument("files", nargs="*")
+    a, _unknown = ap.parse_known_args()
+    if a.help:
+        print(__doc__)
+        return 0
+
+    spread = a.spread if a.spread > 0 else 1.0
+    streams = [open(f, errors="replace") for f in a.files] or [sys.stdin]
+    row = 0
+    out = sys.stdout
+    for stream in streams:
+        for line in stream:
+            line = line.rstrip("\n")
+            for col, ch in enumerate(line):
+                r, g, b = rainbow(row / spread + col / spread, a.freq)
+                out.write("\033[38;2;%d;%d;%dm%s" % (r, g, b, ch))
+            out.write("\033[0m\n")
+            row += 1
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except BrokenPipeError:
+        sys.exit(0)
+    except KeyboardInterrupt:
+        sys.stdout.write("\033[0m")
+        sys.exit(130)

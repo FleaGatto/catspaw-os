@@ -38,3 +38,18 @@ imv
 
 # SoberStrap runs against the system Qt
 python3-pyqt6
+
+# windows compatibility. Bottles, ProtonPlus and protontricks are flatpaks and
+# live in flatpaks.list; this is the native Wine they drive.
+wine
+winetricks
+
+# gum: the settings CLI calls it 15 times. It comes from the Bazzite base today,
+# but listing it explicitly means an upstream drop shows up as a skipped package
+# in catspaw-verify instead of a settings command that dies on first use.
+gum
+
+# node is shipped system-wide so catspaw-claude can install Claude Code into the
+# user's home without them having to source a version manager first.
+nodejs
+npm

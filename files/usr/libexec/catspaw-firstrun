@@ -1,0 +1,40 @@
+#!/usr/bin/bash
+# Per-user first-login tasks. Each step carries its own stamp, so adding a new
+# one later does not re-run the others, and a step that fails is retried next
+# login instead of being silently marked done.
+set -uo pipefail
+
+STATE="${XDG_STATE_HOME:-$HOME/.local/state}/catspaw"
+mkdir -p "$STATE"
+
+done_with() { [ -f "$STATE/$1.done" ]; }
+mark()      { : > "$STATE/$1.done"; }
+
+# --- Brave as the default browser ----------------------------------------
+# Deliberately not the browser picker: Catspaw ships Brave and defaults to it.
+# Run `catspaw-browser-picker` by hand to change this later.
+if ! done_with browser; then
+    if flatpak info com.brave.Browser >/dev/null 2>&1; then
+        desktop=com.brave.Browser.desktop
+        xdg-settings set default-web-browser "$desktop" 2>/dev/null || true
+        for m in text/html x-scheme-handler/http x-scheme-handler/https \
+                 x-scheme-handler/about application/xhtml+xml; do
+            xdg-mime default "$desktop" "$m" 2>/dev/null || true
+        done
+        mark browser
+    fi
+    # Not installed yet: catspaw-flatpaks.service may still be running. Leave
+    # the stamp off so the next login tries again.
+fi
+
+# --- Claude Code ----------------------------------------------------------
+# Installed into the user's home, not /usr: it self-updates, and /usr is
+# read-only on an ostree system. node and npm come from the image.
+if ! done_with claude && command -v npm >/dev/null 2>&1; then
+    if npm install -g --prefix "$HOME/.local" @anthropic-ai/claude-code \
+         >"$STATE/claude-install.log" 2>&1; then
+        mark claude
+    else
+        echo "catspaw-firstrun: Claude Code install failed, see $STATE/claude-install.log" >&2
+    fi
+fi

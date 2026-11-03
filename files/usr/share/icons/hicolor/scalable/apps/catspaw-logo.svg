@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Catspaw OS mark: four toes over a single pad. Referenced by LOGO= in
+     /usr/lib/os-release, so fastfetch and About dialogs can find it. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 250" width="340" height="250">
+  <g fill="#f0a23b">
+    <ellipse cx="64"  cy="86"  rx="25" ry="33"/>
+    <ellipse cx="128" cy="52"  rx="27" ry="35"/>
+    <ellipse cx="206" cy="52"  rx="27" ry="35"/>
+    <ellipse cx="272" cy="86"  rx="25" ry="33"/>
+    <ellipse cx="168" cy="170" rx="82" ry="58"/>
+  </g>
+</svg>
