@@ -57,3 +57,7 @@ npm
 # moved out of the mandatory block in build.sh: useful, but the desktop boots
 # without it, so it must not be able to fail the image
 java-21-openjdk-devel
+
+# zenity: the desktop switcher falls back to it for its menu under GNOME,
+# whose Mutter has no wlr-layer-shell and so cannot run wofi at all.
+zenity

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Desktop Switcher
+GenericName=Session Picker
+Comment=Pick a desktop environment and log into it
+Exec=/usr/bin/de-switcher
+Icon=preferences-desktop-display
+Terminal=false
+Categories=Settings;DesktopSettings;
+Keywords=session;desktop;switch;hyprland;plasma;kde;gnome;login;
+StartupNotify=false
