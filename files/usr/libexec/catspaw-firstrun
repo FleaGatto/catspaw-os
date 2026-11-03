@@ -30,6 +30,10 @@ fi
 # --- Claude Code ----------------------------------------------------------
 # Installed into the user's home, not /usr: it self-updates, and /usr is
 # read-only on an ostree system. node and npm come from the image.
+if ! done_with claude && ! command -v npm >/dev/null 2>&1; then
+    echo "catspaw-firstrun: npm is not installed; skipping Claude Code." >&2
+    echo "  install it with: npm install -g --prefix \"\$HOME/.local\" @anthropic-ai/claude-code" >&2
+fi
 if ! done_with claude && command -v npm >/dev/null 2>&1; then
     if npm install -g --prefix "$HOME/.local" @anthropic-ai/claude-code \
          >"$STATE/claude-install.log" 2>&1; then
