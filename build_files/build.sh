@@ -5,7 +5,13 @@ set -ouex pipefail
 ### ------------------------------------------------------------- repos
 # The Hyprland ecosystem beyond what Fedora ships, plus terminals and LACT.
 # A COPR that has no Fedora 43 build must not take the whole image down.
-for repo in solopasha/hyprland pgdev/ghostty wezfurlong/wezterm-nightly ilyaz/LACT; do
+# sdegler/hyprland, NOT solopasha/hyprland. solopasha has only a rawhide
+# chroot, so enabling it silently did nothing and the mandatory hyprland
+# install below then failed every CI run. sdegler ships fedora-43/44/45, which
+# covers both the pinned base and :stable. pgdev/ghostty has no chroots at all
+# and is dropped; ghostty stays in packages-extra.list, where --skip-unavailable
+# reports it instead of killing the build.
+for repo in sdegler/hyprland wezfurlong/wezterm-nightly ilyaz/LACT; do
     dnf5 -y copr enable "$repo" || echo "WARN: copr $repo unavailable, continuing"
 done
 
@@ -16,8 +22,7 @@ dnf5 -y install \
     xdg-desktop-portal-hyprland \
     waybar wofi SwayNotificationCenter \
     kitty grim slurp cliphist \
-    brightnessctl playerctl pavucontrol blueman network-manager-applet \
-    java-21-openjdk-devel
+    brightnessctl playerctl pavucontrol blueman network-manager-applet
 
 ### ------------------------------------------------------------ extras
 # --skip-unavailable: a package missing from a COPR is reported in the build
@@ -26,7 +31,7 @@ mapfile -t extras < <(grep -vE '^[[:space:]]*(#|$)' /usr/share/catspaw/packages-
 dnf5 -y --skip-unavailable install "${extras[@]}"
 
 # COPRs stay out of the installed system: updates come from rebuilding.
-for repo in solopasha/hyprland pgdev/ghostty wezfurlong/wezterm-nightly ilyaz/LACT; do
+for repo in sdegler/hyprland wezfurlong/wezterm-nightly ilyaz/LACT; do
     dnf5 -y copr disable "$repo" || true
 done
 

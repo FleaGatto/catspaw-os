@@ -53,3 +53,7 @@ gum
 # user's home without them having to source a version manager first.
 nodejs
 npm
+
+# moved out of the mandatory block in build.sh: useful, but the desktop boots
+# without it, so it must not be able to fail the image
+java-21-openjdk-devel
