@@ -1,0 +1,69 @@
+#!/usr/bin/bash
+# Seed home directories with anything /etc/skel provides that they do not
+# already have.
+#
+# Why this is needed at all: /etc/skel is consulted exactly once, when an
+# account is CREATED. Catspaw is almost always arrived at by rebasing an
+# existing Bazzite install, where the account already exists -- so none of the
+# shipped configs ever land. The user picks Hyprland at the greeter and gets a
+# bare compositor: no keybinds, no bar, no terminal, and no way back to the
+# greeter. The session looks broken rather than unconfigured, and the only way
+# out is a TTY.
+#
+# Runs at every boot rather than once, so configs added by a later image show
+# up without any per-user action.
+#
+# An existing path is NEVER touched. A user's own edits win, and so does a
+# symlink into a dotfiles repo -- which is why dangling symlinks count as
+# present: a link to a repo that is not cloned yet must not be overwritten
+# with the image's copy.
+set -uo pipefail
+
+SKEL=${CATSPAW_SKEL:-/etc/skel}
+[ -d "$SKEL" ] || exit 0
+
+seed_into() {
+    local home=$1 uid=$2 gid=$3 seeded=0 src rel dest
+
+    while IFS= read -r -d '' src; do
+        rel=${src#"$SKEL"/}
+        dest=$home/$rel
+        # -e is false for a dangling symlink, so test the link itself as well.
+        if [ -e "$dest" ] || [ -L "$dest" ]; then
+            continue
+        fi
+        mkdir -p "${dest%/*}" 2>/dev/null || continue
+        # -P so a symlink in skel is copied as a symlink, not as its target.
+        cp -Pp "$src" "$dest" 2>/dev/null || continue
+        if [ -n "$uid" ]; then
+            chown -h "$uid:$gid" "$dest" 2>/dev/null
+            # The directories just created belong to root otherwise.
+            local d=${dest%/*}
+            while [ "$d" != "$home" ] && [ "${#d}" -gt "${#home}" ]; do
+                chown -h "$uid:$gid" "$d" 2>/dev/null
+                d=${d%/*}
+            done
+        fi
+        seeded=$(( seeded + 1 ))
+    done < <(find "$SKEL" -mindepth 1 \( -type f -o -type l \) -print0)
+
+    if (( seeded )); then
+        printf 'catspaw-skel: seeded %d file(s) into %s\n' "$seeded" "$home"
+    fi
+}
+
+if [ "${1:-}" = "--all" ]; then
+    # Every real human account, not system users and not nologin shells.
+    while IFS=: read -r _user _x uid gid _gecos home shell; do
+        (( uid >= 1000 && uid < 65534 )) || continue
+        case $shell in */nologin|*/false|"") continue ;; esac
+        [ -d "$home" ] || continue
+        seed_into "$home" "$uid" "$gid"
+    done < <(getent passwd)
+    exit 0
+fi
+
+# Per-user mode: no chown, because we already are that user.
+[ -n "${HOME:-}" ] && [ -d "${HOME:-}" ] || exit 0
+case $HOME in /|/root) exit 0 ;; esac
+seed_into "$HOME" "" ""

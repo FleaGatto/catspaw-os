@@ -1,0 +1,19 @@
+[Unit]
+Description=Seed existing home directories from /etc/skel
+Documentation=https://github.com/FleaGatto/catspaw-os
+ConditionPathIsDirectory=/etc/skel
+# Ordered before logins are permitted at all. Doing this from the user's own
+# session instead would race the compositor reading ~/.config -- and on a
+# greeter-launched Hyprland there is no ordering to win, because the compositor
+# is not started by a systemd user unit. Running before any session exists
+# removes the race rather than narrowing it.
+After=local-fs.target
+Before=systemd-user-sessions.service display-manager.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/libexec/catspaw-skel --all
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

@@ -222,12 +222,31 @@ sleep 1
 
 # Tear the current session down the way it expects to be torn down. uwsm's own
 # check is used rather than sniffing DESKTOP_SESSION, which isn't set here.
+#
+# Nothing here is exec'd, because exec makes the first attempt the last one.
+# Each method is fired and given a moment to land; if it worked we are killed
+# mid-sleep and never reach the next. hyprctl especially cannot be trusted as
+# the final word: with a Lua config active, `hyprctl dispatch exit` is routed
+# through the Lua dispatcher and dies with "expected a dispatcher", leaving the
+# session up with the switch already queued -- so you log out at your leisure
+# into the exact desktop you were trying to leave, and nothing looks broken.
 if command -v uwsm >/dev/null && uwsm check is-active >/dev/null 2>&1; then
-  exec uwsm stop
-elif [[ ${XDG_CURRENT_DESKTOP:-} == *Hyprland* ]] && command -v hyprctl >/dev/null; then
-  exec hyprctl dispatch exit
-elif [[ ${XDG_CURRENT_DESKTOP:-} == *GNOME* ]] && command -v gnome-session-quit >/dev/null; then
-  exec gnome-session-quit --logout --no-prompt
-else
-  exec loginctl terminate-session "${XDG_SESSION_ID:-self}"
+  uwsm stop || true
+  sleep 3
 fi
+
+if [[ ${XDG_CURRENT_DESKTOP:-} == *Hyprland* ]] && command -v hyprctl >/dev/null; then
+  hyprctl dispatch exit >/dev/null 2>&1 || true
+  sleep 3
+fi
+
+if [[ ${XDG_CURRENT_DESKTOP:-} == *GNOME* ]] && command -v gnome-session-quit >/dev/null; then
+  gnome-session-quit --logout --no-prompt >/dev/null 2>&1 || true
+  sleep 3
+fi
+
+# Desktop-agnostic and always reachable: if we got this far, the session's own
+# way out did not work.
+loginctl terminate-session "${XDG_SESSION_ID:-self}" 2>/dev/null ||
+  loginctl terminate-user "${USER:-$(id -un)}" 2>/dev/null ||
+  die "could not end the session; log out manually to finish the switch"

@@ -93,6 +93,10 @@ plymouth-set-default-theme catspaw || echo "WARN: could not set plymouth theme"
 
 ### ------------------------------------------------------------ services
 systemctl enable catspaw-flatpaks.service
+# /etc/skel only applies to accounts created after it exists, and nobody
+# creates an account when they rebase -- so without this the shipped Hyprland
+# config never reaches an existing user. See the unit for the ordering.
+systemctl enable catspaw-skel.service
 
 ### ------------------------------------------------------------ cleanup
 dnf5 clean all
