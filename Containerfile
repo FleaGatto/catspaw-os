@@ -13,7 +13,16 @@ FROM ${BASE_IMAGE}
 COPY files/ /
 COPY build_files/ /tmp/build_files/
 
+# The final step differs by base. `ostree container commit` is deprecated and
+# fails outright on a bootc base with "Not in an ostree-based container
+# environment"; `bootc container lint` is its replacement. BASE_IMAGE defaults
+# to an older pinned digest for reproducible local builds while CI overrides it
+# with :stable, so both have to work -- pick by what the base actually ships.
 RUN --mount=type=cache,dst=/var/cache/libdnf5,sharing=locked \
     /tmp/build_files/build.sh && \
     rm -rf /tmp/build_files && \
-    ostree container commit
+    if command -v bootc >/dev/null 2>&1; then \
+        bootc container lint; \
+    else \
+        ostree container commit; \
+    fi
